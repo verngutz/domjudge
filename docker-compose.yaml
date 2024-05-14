@@ -1,0 +1,51 @@
+version: "3.6"
+services:
+  mariadb:
+    container_name: mariadb
+    command: ['--max-connections=1000', '--max-allowed-packet=10G']
+    image: mariadb
+    ports:
+    - 13306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: domjudge
+      MARIADB_DATABASE: domjudge
+      MARIADB_USER: domjudge
+      MARIADB_PASSWORD: domjudge
+  domserver:
+    container_name: domserver
+    image: domjudge/domserver:latest
+    ports:
+    - 12345:80
+    environment:
+      CONTAINER_TIMEZONE: Asia/Manila
+    depends_on:
+    - mariadb
+  judgehost-0:
+    container_name: judgedaemon-0
+    privileged: true
+    image: domjudge/judgehost:latest
+    environment:
+      JUDGEDAEMON_PASSWORD: kAbOMTa358VWTUt9J4kfMQLe6n/ETqpB
+      CONTAINER_TIMEZONE: Asia/Manila
+    depends_on:
+    - domserver
+  judgehost-1:
+    container_name: judgedaemon-1
+    privileged: true
+    image: domjudge/judgehost:latest
+    environment:
+      JUDGEDAEMON_PASSWORD: kAbOMTa358VWTUt9J4kfMQLe6n/ETqpB
+      CONTAINER_TIMEZONE: Asia/Manila
+    depends_on:
+    - domserver
+  nginx:
+    image: nginx:stable
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+    - ./nginx-config/.htpasswd:/etc/nginx/.htpasswd
+    - ./nginx-config/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./certs:/certs
+    depends_on:
+    - domserver
