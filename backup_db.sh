@@ -1,2 +1,2 @@
 #!/bin/bash
-docker exec dj-mariadb mariadb-dump -u root --password=domjudge --max_allowed_packet=1G domjudge > backup.sql
+docker exec mariadb mariadb-dump -u root --password=domjudge --max_allowed_packet=1G domjudge > ${1:-backup.sql}
